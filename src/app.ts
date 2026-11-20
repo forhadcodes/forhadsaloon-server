@@ -7,6 +7,7 @@ import morgan from "morgan";
 import { connectDB } from "./config/db.js";
 import { env } from "./config/env.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
+import adminRoutes from "./routes/admin.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
 import serviceRoutes from "./routes/service.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
@@ -65,6 +66,7 @@ app.use(async (_req, _res, next) => {
 app.use(express.json({ limit: "1mb" }));
 
 app.use("/api", serviceRoutes);
+app.use("/api", adminRoutes);
 app.use("/api", profileRoutes);
 app.use("/api", uploadRoutes);
 
