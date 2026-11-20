@@ -30,6 +30,9 @@ Fill in `.env` with your own values (never commit it).
 # Apply all model indexes (once per environment)
 npm run db:indexes
 
+# Optional: seed 12 demo services (all 7 categories, 2 inactive; idempotent)
+npm run db:seed:services
+
 # Start the API on port 5000
 npm run dev
 

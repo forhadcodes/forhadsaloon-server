@@ -11,7 +11,8 @@
     "prestart": "npm run build",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "db:indexes": "tsx src/scripts/syncIndexes.ts"
+    "db:indexes": "tsx src/scripts/syncIndexes.ts",
+    "db:seed:services": "tsx src/scripts/seedServices.ts"
   },
   "keywords": [],
   "author": "",

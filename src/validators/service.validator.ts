@@ -5,12 +5,16 @@ import { CATEGORIES, SERVICE_STATUS } from "../config/constants.js";
 /** Only images that came back from our own ImgBB upload endpoint are accepted. */
 const IMGBB_HOSTS = new Set(["i.ibb.co", "ibb.co", "www.ibb.co"]);
 
+/** Seeded demo services use the salon photos shipped with the client. */
+const DEMO_IMAGE_PATH = /^\/images\/[A-Za-z0-9._-]+\.(jpg|jpeg|png|webp)$/i;
+
 const imageField = z
   .string()
   .trim()
   .min(1, "Service image is required")
   .max(500, "Image URL is too long")
   .refine((value) => {
+    if (DEMO_IMAGE_PATH.test(value)) return true;
     try {
       const url = new URL(value);
       return url.protocol === "https:" && IMGBB_HOSTS.has(url.hostname.toLowerCase());
