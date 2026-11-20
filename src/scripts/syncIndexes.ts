@@ -1,30 +1,24 @@
 import "dotenv/config";
 import mongoose from "mongoose";
 
+import { connectDB } from "../config/db.js";
+import { Appointment, Service, Transaction, User } from "../models/index.js";
+
+/**
+ * Serverless auto-indexing is unreliable — run `npm run db:indexes` once against
+ * each environment (dev and production) after deployment.
+ */
 (async () => {
-  await mongoose.connect(process.env.MONGODB_URI!);
+  await connectDB();
 
-  const db = mongoose.connection.db;
-
-  // Verify User collection exists and has expected fields
-  const userCount = await db!.collection("users").countDocuments();
-  console.log("User documents:", userCount);
-
-  // Verify Service, Appointment, Transaction collections
-  for (const name of ["services", "appointments", "transactions"]) {
-    const count = await db!.collection(name).countDocuments();
-    console.log(`${name} documents:`, count);
-  }
-
-  // List indexes for each relevant collection
-  for (const name of ["services", "appointments", "transactions", "users"]) {
-    const idxs = await db!.collection(name).indexes();
-    console.log(`${name} indexes:`, idxs.length, "index(es)");
+  for (const model of [User, Service, Appointment, Transaction]) {
+    await model.syncIndexes();
+    console.log(`${model.modelName}: indexes synced`);
   }
 
   await mongoose.disconnect();
-  console.log("✅ Index verification complete.");
-})().catch((err) => {
-  console.error("❌ Sync failed:", err);
+  console.log("Index sync complete.");
+})().catch((error: unknown) => {
+  console.error("Index sync failed:", error instanceof Error ? error.message : error);
   process.exit(1);
 });
