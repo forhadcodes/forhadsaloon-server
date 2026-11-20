@@ -26,6 +26,16 @@ cp .env.example .env
 npm run dev
 ```
 
+## Run Production Build
+
+```bash
+npm start
+```
+
+`npm start` builds the TypeScript source automatically before launching the server.
+`node index.js` is also supported for hosts that require a JavaScript entry file; it
+builds the project first if `dist/` is missing.
+
 ## Required Environment Variables
 
 PORT, NODE_ENV, MONGODB_URI, CLIENT_URL, BETTER_AUTH_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, IMGBB_API_KEY
