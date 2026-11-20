@@ -63,6 +63,10 @@ export const createCheckoutSession = asyncHandler(async (req: Request, res: Resp
     cancel_url: `${env.CLIENT_URL.replace(/\/+$/, "")}/payment/cancel`,
   });
 
+  if (!session.url) {
+    throw new ApiError(500, "Could not create the payment session. Please try again.");
+  }
+
   res.json({ success: true, data: { url: session.url } });
 });
 
