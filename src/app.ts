@@ -1,53 +1,72 @@
-// @ts-nocheck
 import cors from "cors";
-import express, { type Request, Response, NextFunction } from "express";
+import express, { type Request, type Response } from "express";
+import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import morgan from "morgan";
-import dotenv from "dotenv";
 
-dotenv.config();
-
-interface AuthRequest extends Request {
-  userId?: string;
-}
+import { connectDB } from "./config/db.js";
+import { env } from "./config/env.js";
+import { errorHandler, notFound } from "./middleware/errorHandler.js";
+import profileRoutes from "./routes/profile.routes.js";
+import uploadRoutes from "./routes/upload.routes.js";
+import { ApiError } from "./utils/index.js";
 
 const app = express();
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
+
 app.use(helmet());
-app.use(morgan(process.env.NODE_ENV === "development" ? "dev" : "combined"));
+app.use(morgan(env.NODE_ENV === "development" ? "dev" : "combined"));
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: env.CLIENT_URL,
     credentials: true,
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Authorization", "Content-Type"],
+    optionsSuccessStatus: 204,
   }),
 );
+
+app.get("/api/health", (_req: Request, res: Response) => {
+  res.json({ success: true, data: { status: "ok" } });
+});
+
+/* ---------------------------------------------------------------------------
+ * Stripe webhook slot (Step 13).
+ * The webhook MUST be registered HERE, above express.json(), because signature
+ * verification needs the raw body:
+ *
+ *   app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), stripeWebhook);
+ * ------------------------------------------------------------------------- */
+
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 300,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  skip: (req) => req.path === "/api/health",
+  message: { success: false, message: "Too many requests. Please try again later." },
+});
+
+app.use(globalLimiter);
+
+// Serverless-safe cached connection, opened before any route touches a model.
+app.use(async (_req, _res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch {
+    next(new ApiError(503, "Database is unavailable. Please try again."));
+  }
+});
+
 app.use(express.json({ limit: "1mb" }));
 
-function verifyAuth(req: AuthRequest, res: Response, next: NextFunction) {
-  const h = req.headers.authorization;
-  if (!h) return next(new Error("Authentication required"));
-  const p = h.split(" ");
-  if (p.length !== 2 || p[0].toLowerCase() !== "bearer") return next(new Error("Invalid token"));
-  req.userId = p[1];
-  next();
-}
+app.use("/api", profileRoutes);
+app.use("/api", uploadRoutes);
 
-app.get("/api/profile", verifyAuth, (req: AuthRequest, res: Response) => {
-  if (!req.userId) return res.status(401).json({ success: false, message: "Auth required" });
-  res.json({ success: true, data: { id: req.userId, name: "User", email: "u@test.com" } });
-});
-
-app.get("/api/health", (req: Request, res: Response) => res.json({ success: true, status: "ok" }));
-
-app.use((req: Request, res: Response, next: NextFunction) => next(new Error("Not found")));
-
-app.use(function(_err: any, _req: Request, _res: Response, _next: any) {
-  const status = 500;
-  _res.status(status).json({ success: false, message: "Server error" });
-});
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;
