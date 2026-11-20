@@ -41,9 +41,9 @@ Then start the client (salonbook-client repo) with `npm run dev`. Other commands
 
 ## Required Environment Variables
 
-`PORT`, `NODE_ENV`, `MONGODB_URI`, `CLIENT_URL`, `BETTER_AUTH_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `IMGBB_API_KEY`
+`PORT`, `NODE_ENV`, `MONGODB_URI`, `MONGODB_DB_NAME`, `CLIENT_URL`, `BETTER_AUTH_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `IMGBB_API_KEY`
 
-`CLIENT_URL` and `BETTER_AUTH_URL` both point to the deployed client origin (no trailing slash). Never commit real values.
+`MONGODB_DB_NAME` is optional (defaults to `forhadsaloondb`) but must match the client's value — both apps share one database. `CLIENT_URL` and `BETTER_AUTH_URL` both point to the deployed client origin (no trailing slash). Never commit real values.
 
 ## API Routes
 

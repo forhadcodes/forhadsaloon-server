@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import mongoose, { Types } from "mongoose";
 
+import { env } from "../config/env.js";
 import { Appointment, Service, Transaction, User } from "../models/index.js";
 import {
   ApiError,
@@ -74,7 +75,13 @@ export const getUserById = asyncHandler(async (req: Request, res: Response) => {
  * stops working immediately. Session documents store the id field as `userId`.
  */
 async function revokeSessions(userId: Types.ObjectId): Promise<void> {
-  await mongoose.connection.db?.collection("sessions").deleteMany({ userId });
+  // Explicit DB (not the connection default) so serverless invocations always
+  // target the same database Better Auth uses on the client app.
+  await mongoose.connection
+    .getClient()
+    .db(env.MONGODB_DB_NAME)
+    .collection("sessions")
+    .deleteMany({ userId });
 }
 
 const assertManageableUser = (req: Request, id: Types.ObjectId) => {

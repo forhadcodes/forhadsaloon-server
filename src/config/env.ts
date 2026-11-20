@@ -7,6 +7,8 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(5000),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
+  // Must match the client's MONGODB_DB_NAME. Both apps share one database.
+  MONGODB_DB_NAME: z.string().trim().min(1).default("forhadsaloondb"),
   CLIENT_URL: z.url("CLIENT_URL must be a valid URL"),
   BETTER_AUTH_URL: z.url("BETTER_AUTH_URL must be a valid URL"),
   STRIPE_SECRET_KEY: z.string().min(1, "STRIPE_SECRET_KEY is required"),
