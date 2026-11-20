@@ -13,10 +13,12 @@ export const updateProfileSchema = z
       .url("Image must be a valid URL")
       .refine((value) => value.startsWith("https://"), "Image must be an https URL")
       .optional(),
+    // An empty value clears a previously saved phone number.
     phone: z
-      .string()
-      .trim()
-      .regex(/^\+?[\d\s\-()]{7,20}$/, "Enter a valid phone number")
+      .union([
+        z.string().trim().regex(/^\+?[\d\s\-()]{7,20}$/, "Enter a valid phone number"),
+        z.literal(""),
+      ])
       .optional(),
   })
   .strict()
