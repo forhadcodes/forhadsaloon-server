@@ -60,7 +60,7 @@ export const createCheckoutSession = asyncHandler(async (req: Request, res: Resp
     metadata: { appointmentId, customerId: customerId(req) },
     client_reference_id: appointmentId,
     success_url: `${env.CLIENT_URL.replace(/\/+$/, "")}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${env.CLIENT_URL.replace(/\/+$/, "")}/payment/cancel`,
+    cancel_url: `${env.CLIENT_URL.replace(/\/+$/, "")}/payment/cancel?appointment_id=${appointmentId}`,
   });
 
   if (!session.url) {
