@@ -3,7 +3,7 @@ import type Stripe from "stripe";
 
 import { connectDB } from "../config/db.js";
 import { env } from "../config/env.js";
-import { stripe } from "../config/stripe.js";
+import { stripe, stripeConfigured } from "../config/stripe.js";
 import { Appointment, Transaction } from "../models/index.js";
 import {
   ApiError,
@@ -25,11 +25,23 @@ const customerId = (req: Request): string => {
   return req.user.id;
 };
 
+/** Avoid surfacing raw Stripe errors when the server still has a placeholder key. */
+function requireStripe(): void {
+  if (stripeConfigured) return;
+  throw new ApiError(
+    503,
+    env.NODE_ENV === "production"
+      ? "Online payments are temporarily unavailable. Please try again later."
+      : "Stripe is not configured. Set STRIPE_SECRET_KEY=sk_test_... in the server .env and restart the server.",
+  );
+}
+
 /**
  * POST /api/payments/create-checkout-session
  * The amount ALWAYS comes from the database snapshot, never from the client.
  */
 export const createCheckoutSession = asyncHandler(async (req: Request, res: Response) => {
+  requireStripe();
   const { appointmentId } = createCheckoutSchema.parse(req.body);
 
   const appointment = await Appointment.findOne({
@@ -172,6 +184,7 @@ export const stripeWebhook: RequestHandler = asyncHandler(async (req, res) => {
  * The browser polls this after Stripe redirects back; it never writes state.
  */
 export const getPaymentSessionStatus = asyncHandler(async (req: Request, res: Response) => {
+  requireStripe();
   const sessionId = String(req.params.sessionId ?? "");
   if (!/^cs_(test|live)_[\w]+$/.test(sessionId)) {
     throw new ApiError(400, "Invalid checkout session id");
