@@ -22,3 +22,10 @@ export const auth: RequestHandler[] = [verifyJWT, loadUser];
 export const adminOnly: RequestHandler[] = [verifyJWT, loadUser, requireRole("admin")];
 
 export const customerOnly: RequestHandler[] = [verifyJWT, loadUser, requireRole("customer")];
+
+/** Customers only, with the specific message required on the booking endpoint. */
+export const customerBookingOnly: RequestHandler[] = [
+  verifyJWT,
+  loadUser,
+  requireRole("customer", "Admins cannot book appointments"),
+];
