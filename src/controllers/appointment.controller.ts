@@ -161,7 +161,8 @@ export const getAppointmentById = asyncHandler(async (req: Request, res: Respons
 
   if (!appointment) throw new ApiError(404, "Appointment not found");
 
-  const transaction = await Transaction.findOne({ appointmentId: id }).lean();
+  // Step 10: only the paid transaction belongs in the customer's payment history.
+  const transaction = await Transaction.findOne({ appointmentId: id, status: "paid" }).lean();
 
   res.json({
     success: true,
