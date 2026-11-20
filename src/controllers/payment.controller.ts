@@ -194,6 +194,7 @@ export const getPaymentSessionStatus = asyncHandler(async (req: Request, res: Re
 
   const paidTransaction = await Transaction.findOne({
     stripeSessionId: sessionId,
+    appointmentId: appointment._id,
     status: "paid",
   }).lean();
 
