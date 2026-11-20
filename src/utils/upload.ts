@@ -29,8 +29,22 @@ type ImgbbResponse = {
     display_url?: string;
     thumb?: { url?: string };
   };
-  error?: { message?: string };
+  error?: { code?: number; message?: string };
 };
+
+/** ImgBB errors that must not be surfaced verbatim to the browser. */
+const IMGBB_ERROR_MESSAGES: Record<number, string> = {
+  100: "Image upload is not configured correctly. Please contact support.",
+  103: "Image upload is temporarily unavailable. Please try again later.",
+};
+
+function imgbbErrorMessage(payload: ImgbbResponse | null): string {
+  const code = payload?.error?.code;
+  if (typeof code === "number" && IMGBB_ERROR_MESSAGES[code]) {
+    return IMGBB_ERROR_MESSAGES[code];
+  }
+  return payload?.error?.message ?? "Image upload failed. Please try again.";
+}
 
 export type UploadedImage = {
   url: string;
@@ -60,12 +74,19 @@ export const uploadToImgbb = async (file: Express.Multer.File): Promise<Uploaded
   const url = payload?.data?.url;
 
   if (!response.ok || !payload?.success || !url) {
-    throw new ApiError(
-      502,
-      payload?.error?.message
-        ? `Image upload failed: ${payload.error.message}`
-        : "Image upload failed. Please try again.",
-    );
+    throw new ApiError(502, imgbbErrorMessage(payload));
+  }
+
+  // The service validator only accepts ImgBB https URLs, so fail here with a
+  // clear message if the hosting service ever returns something unexpected.
+  let imageUrl: URL;
+  try {
+    imageUrl = new URL(url);
+  } catch {
+    throw new ApiError(502, "Image upload returned an invalid image URL. Please try again.");
+  }
+  if (imageUrl.protocol !== "https:" || !["i.ibb.co", "ibb.co"].includes(imageUrl.hostname)) {
+    throw new ApiError(502, "Image upload returned an unsupported image URL. Please try again.");
   }
 
   return { url, thumbnailUrl: payload.data?.thumb?.url ?? url };
