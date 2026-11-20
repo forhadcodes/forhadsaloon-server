@@ -11,6 +11,9 @@ import adminRoutes from "./routes/admin.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
 import serviceRoutes from "./routes/service.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
+import appointmentsRoutes from "./routes/appointments.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
+import { stripeWebhook } from "./controllers/payment.controller.js";
 import { ApiError } from "./utils/index.js";
 
 const app = express();
@@ -35,12 +38,10 @@ app.get("/api/health", (_req: Request, res: Response) => {
 });
 
 /* ---------------------------------------------------------------------------
- * Stripe webhook slot (Step 13).
- * The webhook MUST be registered HERE, above express.json(), because signature
- * verification needs the raw body:
- *
- *   app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), stripeWebhook);
+ * Stripe webhook: registered HERE, above express.json(), because signature
+ * verification needs the raw request body. Do not move this below the parser.
  * ------------------------------------------------------------------------- */
+app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), stripeWebhook);
 
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -66,6 +67,8 @@ app.use(async (_req, _res, next) => {
 app.use(express.json({ limit: "1mb" }));
 
 app.use("/api", serviceRoutes);
+app.use("/api", appointmentsRoutes);
+app.use("/api", paymentRoutes);
 app.use("/api", adminRoutes);
 app.use("/api", profileRoutes);
 app.use("/api", uploadRoutes);
