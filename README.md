@@ -89,5 +89,5 @@ To be added after deployment.
 
 ## Repositories
 
-- Client: https://github.com/forhadsaloon/salonbook-client
-- Server: https://github.com/forhadsaloon/salonbook-server
+- Client: https://github.com/forhadcodes/forhadsaloon-client
+- Server: https://github.com/forhadcodes/forhadsaloon-server
