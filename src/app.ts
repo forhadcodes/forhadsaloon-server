@@ -67,7 +67,7 @@ app.use(async (_req, _res, next) => {
 app.use(express.json({ limit: "1mb" }));
 
 app.use("/api", serviceRoutes);
-app.use("/api", appointmentsRoutes);
+app.use("/api/appointments", appointmentsRoutes);
 app.use("/api", paymentRoutes);
 app.use("/api", adminRoutes);
 app.use("/api", profileRoutes);
