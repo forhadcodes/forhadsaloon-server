@@ -92,6 +92,9 @@ export const stripeWebhook: RequestHandler = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid Stripe signature");
   }
 
+  // Event id/type only — never log the payload or any key material.
+  console.info(`[stripe] ${event.type} ${event.id}`);
+
   if (
     event.type === "checkout.session.completed" ||
     event.type === "checkout.session.expired" ||
