@@ -13,7 +13,7 @@ export interface IUser extends Document {
 const UserSchema = new Schema(
   {
     name: { type: String, required: true, trim: true, minlength: 2, maxlength: 60 },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    email: { type: String, required: true, lowercase: true, trim: true },
     image: { type: String },
     role: { type: String, enum: ["customer", "admin"], default: "customer" },
     isBlocked: { type: Boolean, default: false },
