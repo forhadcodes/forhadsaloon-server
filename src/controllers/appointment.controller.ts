@@ -90,7 +90,7 @@ export const createAppointment = asyncHandler(async (req: Request, res: Response
 /** GET /api/appointments/availability?date=YYYY-MM-DD — no personal data. */
 export const getAvailability = asyncHandler(async (req: Request, res: Response) => {
   const { date } = parseQuery(availabilityQuerySchema, req.query);
-  const dateObj = dateOnlyToUtcMidnight(date);
+  const dateObj = dateOnlyToUtcMidnight(parseDateOnly(date));
 
   const taken = await Appointment.find({
     appointmentDate: dateObj,
