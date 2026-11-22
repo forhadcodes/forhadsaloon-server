@@ -38,7 +38,7 @@ app.use(
 );
 
 app.get("/", (_req: Request, res: Response) => {
-  res.json({ success: true, message: "ForhadSaloon server is running" });
+  res.type("text/plain").send("forhadsaloon server is running");
 });
 
 app.get("/api/health", (_req: Request, res: Response) => {
