@@ -85,17 +85,22 @@ async function revokeSessions(userId: Types.ObjectId): Promise<void> {
     .deleteMany({ $or: [{ userId }, { userId: String(userId) }] });
 }
 
-const assertManageableUser = (req: Request, id: Types.ObjectId) => {
+const assertManageableUser = async (req: Request, id: Types.ObjectId) => {
   if (!req.user) throw new ApiError(401, "Authentication required");
   if (String(id) === req.user.id) {
     throw new ApiError(400, "You cannot change your own block status");
+  }
+  const target = await User.findById(id).select("role").lean();
+  if (!target) throw new ApiError(404, "Customer not found");
+  if (target.role !== "customer") {
+    throw new ApiError(400, "Only customers can be blocked or unblocked");
   }
 };
 
 /** PATCH /api/admin/users/:id/block */
 export const blockUser = asyncHandler(async (req: Request, res: Response) => {
   const id = assertObjectId(req.params.id, "user");
-  assertManageableUser(req, id);
+  await assertManageableUser(req, id);
 
   const user = await User.findOneAndUpdate(
     { _id: id, role: "customer" },
@@ -112,7 +117,7 @@ export const blockUser = asyncHandler(async (req: Request, res: Response) => {
 /** PATCH /api/admin/users/:id/unblock */
 export const unblockUser = asyncHandler(async (req: Request, res: Response) => {
   const id = assertObjectId(req.params.id, "user");
-  assertManageableUser(req, id);
+  await assertManageableUser(req, id);
 
   const user = await User.findOneAndUpdate(
     { _id: id, role: "customer" },
