@@ -81,7 +81,8 @@ async function revokeSessions(userId: Types.ObjectId): Promise<void> {
     .getClient()
     .db(env.MONGODB_DB_NAME)
     .collection("sessions")
-    .deleteMany({ userId });
+    // Better Auth may store userId as an ObjectId or as its string form.
+    .deleteMany({ $or: [{ userId }, { userId: String(userId) }] });
 }
 
 const assertManageableUser = (req: Request, id: Types.ObjectId) => {
