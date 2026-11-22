@@ -37,6 +37,10 @@ app.use(
   }),
 );
 
+app.get("/", (_req: Request, res: Response) => {
+  res.json({ success: true, message: "ForhadSaloon server is running" });
+});
+
 app.get("/api/health", (_req: Request, res: Response) => {
   res.json({ success: true, data: { status: "ok" } });
 });
