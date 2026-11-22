@@ -1,3 +1,7 @@
+// Loads the global Express.Request augmentation (userId / user). Keep this
+// import: Vercel's build only type-checks files reachable from the entry point.
+import "./types/express.js";
+
 import cors from "cors";
 import express, { type Request, type Response } from "express";
 import rateLimit from "express-rate-limit";
