@@ -36,4 +36,9 @@ const ServiceSchema = new Schema(
   { timestamps: false }
 );
 
+ServiceSchema.index({ status: 1 });
+ServiceSchema.index({ category: 1 });
+ServiceSchema.index({ price: 1 });
+ServiceSchema.index({ serviceName: 1 });
+
 export const Service: Model<IService> = mongoose.model<IService>("Service", ServiceSchema);
